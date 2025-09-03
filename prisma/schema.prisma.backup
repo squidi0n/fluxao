@@ -1,0 +1,1748 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "windows"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     String                  @id @default(uuid())
+  email                  String                  @unique
+  name                   String?
+  username               String?                 @unique
+  bio                    String?
+  avatar                 String?
+  image                  String?
+  location               String?
+  website                String?
+  passwordHash           String?
+  role                   Role                    @default("USER")
+  emailVerified          DateTime?
+  emailVerifiedLegacy    Boolean                 @default(false)
+  isPublic               Boolean                 @default(true)
+  isAdmin                Boolean                 @default(false)
+  trialStartedAt         DateTime?
+  trialEndsAt            DateTime?
+  hasUsedTrial           Boolean                 @default(false)
+  lastLoginAt            DateTime?
+  followingCount         Int                     @default(0)
+  followersCount         Int                     @default(0)
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  accounts               Account[]
+  aiChats                AIChat[]
+  aiPermission           AIPermission?
+  aiTaskLogs             AITaskLog[]
+  aiUsageQuota           AIUsageQuota?
+  apiKeys                ApiKey[]
+  articleVotes           ArticleVote[]
+  auditLogs              AuditLog[]
+  commentLikes           CommentLike[]
+  comments               Comment[]
+  editorPermissions      EditorPermissions[]
+  emailVerifyTokens      EmailVerifyToken[]
+  flux                   Flux[]
+  followers              Follow[]                @relation("UserFollowers")
+  following              Follow[]                @relation("UserFollowing")
+  mediaAssets            MediaAsset[]
+  notificationPreference NotificationPreference?
+  notifications          Notification[]
+  passwordResetTokens    PasswordResetToken[]
+  posts                  Post[]
+  quotes                 Quote[]
+  readingHistory         ReadingHistory[]
+  savedFilters           SavedFilter[]
+  securityEvents         SecurityEvent[]
+  sessionAnalytics       SessionAnalytics[]
+  sessions               Session[]
+  subscription           Subscription?
+  supportTickets         SupportTicket[]
+  userActivities         UserActivity[]
+  userSettings           UserSettings?
+
+  @@index([email])
+  @@index([username])
+  @@index([followersCount])
+  @@index([trialEndsAt])
+  @@map("users")
+}
+
+model UserSettings {
+  id                     String   @id @default(uuid())
+  userId                 String   @unique
+  emailNotifications     Boolean  @default(true)
+  newsletterSubscription Boolean  @default(true)
+  commentNotifications   Boolean  @default(true)
+  mentionNotifications   Boolean  @default(true)
+  securityNotifications  Boolean  @default(true)
+  profileVisible         Boolean  @default(true)
+  showEmail              Boolean  @default(false)
+  showLocation           Boolean  @default(true)
+  allowDirectMessages    Boolean  @default(true)
+  language               String   @default("de")
+  timezone               String   @default("Europe/Berlin")
+  dateFormat             String   @default("DD/MM/YYYY")
+  theme                  String   @default("system")
+  contentLanguages       Json?
+  interestedTopics       Json?
+  hideAds                Boolean  @default(false)
+  editorBio              String?
+  editorSpecialties      Json?
+  authorPageVisible      Boolean  @default(true)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_settings")
+}
+
+model EditorPermissions {
+  id                String    @id @default(uuid())
+  userId            String
+  categoryId        String?
+  canCreatePosts    Boolean   @default(true)
+  canEditPosts      Boolean   @default(true)
+  canDeletePosts    Boolean   @default(false)
+  canPublishPosts   Boolean   @default(false)
+  canManageComments Boolean   @default(false)
+  canUploadMedia    Boolean   @default(true)
+  maxPostsPerMonth  Int?
+  maxImagesPerPost  Int       @default(10)
+  maxVideoLength    Int       @default(300)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  grantedBy         String
+  category          Category? @relation(fields: [categoryId], references: [id])
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, categoryId])
+  @@index([userId])
+  @@index([categoryId])
+  @@map("editor_permissions")
+}
+
+model Post {
+  id                   String           @id @default(uuid())
+  slug                 String           @unique
+  title                String
+  teaser               String?
+  content              String
+  body                 String?
+  excerpt              String?
+  coverImage           String?
+  summary              String?
+  keywords             Json?
+  status               PostStatus       @default("DRAFT")
+  publishedAt          DateTime?
+  isFeatured           Boolean          @default(false)
+  isFeaturedInCategory Boolean          @default(false)
+  subcategory          String?
+  contentType          ContentType      @default("TUTORIAL")
+  difficultyLevel      DifficultyLevel  @default("BEGINNER")
+  estimatedReadTime    Int?
+  authorId             String
+  viewCount            Int              @default(0)
+  fluxCount            Int              @default(0)
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  articleVotes         ArticleVote[]
+  comments             Comment[]
+  flux                 Flux[]
+  postAnalytics        PostAnalytics?
+  categories           PostCategory[]
+  postScore            PostScore?
+  tags                 PostTag[]
+  author               User             @relation(fields: [authorId], references: [id])
+  premiumContent       PremiumContent?
+  readingHistory       ReadingHistory[]
+  trendingData         TrendingArticle?
+  userActivities       UserActivity[]
+
+  @@index([slug])
+  @@index([status, publishedAt])
+  @@index([title])
+  @@index([contentType])
+  @@index([difficultyLevel])
+  @@index([subcategory])
+  @@map("posts")
+}
+
+model Tag {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  slug      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  posts     PostTag[]
+
+  @@index([slug])
+  @@map("tags")
+}
+
+model PostTag {
+  postId String
+  tagId  String
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@map("post_tags")
+}
+
+model Category {
+  id                String              @id @default(uuid())
+  name              String              @unique
+  slug              String              @unique
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  editorPermissions EditorPermissions[]
+  posts             PostCategory[]
+
+  @@index([slug])
+  @@map("categories")
+}
+
+model PostCategory {
+  postId     String
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([postId, categoryId])
+  @@map("post_categories")
+}
+
+model NewsletterSubscriber {
+  id                String                     @id @default(uuid())
+  email             String                     @unique
+  status            String                     @default("pending")
+  token             String                     @unique @default(uuid())
+  ipAddress         String?
+  userAgent         String?
+  consentGiven      Boolean                    @default(false)
+  consentDate       DateTime?
+  doubleOptIn       Boolean                    @default(false)
+  source            String?
+  preferences       Json?
+  tags              Json?
+  firstName         String?
+  lastName          String?
+  language          String                     @default("de")
+  unsubscribedAt    DateTime?
+  unsubscribeToken  String?                    @unique
+  unsubscribeReason String?
+  createdAt         DateTime                   @default(now())
+  verifiedAt        DateTime?
+  updatedAt         DateTime                   @default(now()) @updatedAt
+  consents          NewsletterConsent[]
+  interactions      NewsletterInteraction[]
+  newsletterJobs    NewsletterJob[]
+  lists             NewsletterListSubscriber[]
+  recipients        NewsletterRecipient[]
+
+  @@index([email])
+  @@index([token])
+  @@index([status])
+  @@index([unsubscribeToken])
+  @@index([verifiedAt])
+  @@map("newsletter_subscribers")
+}
+
+model NewsletterIssue {
+  id             String          @id @default(uuid())
+  subject        String
+  body           String
+  createdAt      DateTime        @default(now())
+  sentAt         DateTime?
+  status         String          @default("draft")
+  newsletterJobs NewsletterJob[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("newsletter_issues")
+}
+
+model NewsletterJob {
+  id           String               @id @default(uuid())
+  issueId      String
+  subscriberId String
+  status       String               @default("pending")
+  error        String?
+  attempts     Int                  @default(0)
+  processedAt  DateTime?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  subscriber   NewsletterSubscriber @relation(fields: [subscriberId], references: [id])
+  issue        NewsletterIssue      @relation(fields: [issueId], references: [id])
+
+  @@unique([issueId, subscriberId])
+  @@index([status])
+  @@index([issueId])
+  @@index([subscriberId])
+  @@map("newsletter_jobs")
+}
+
+model Media {
+  id        String   @id @default(uuid())
+  url       String
+  provider  String   @default("cloudinary")
+  alt       String?
+  width     Int?
+  height    Int?
+  format    String?
+  createdAt DateTime @default(now())
+
+  @@map("media")
+}
+
+model Setting {
+  key       String   @id
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  token     String    @unique
+  userId    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+model EmailVerifyToken {
+  id        String    @id @default(uuid())
+  token     String    @unique
+  userId    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("email_verify_tokens")
+}
+
+model Comment {
+  id               String        @id @default(uuid())
+  postId           String
+  parentId         String?
+  authorName       String?
+  authorEmail      String?
+  authorId         String?
+  body             String
+  status           CommentStatus @default("PENDING")
+  ipAddress        String?
+  userAgent        String?
+  spamScore        Float?
+  moderatedBy      String?
+  moderatedAt      DateTime?
+  moderationStatus String        @default("pending")
+  moderationReason String?
+  moderationScore  Float?
+  aiReviewed       Boolean       @default(false)
+  aiReviewedAt     DateTime?
+  humanFeedback    String?
+  feedbackBy       String?
+  feedbackAt       DateTime?
+  likeCount        Int           @default(0)
+  dislikeCount     Int           @default(0)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  likes            CommentLike[]
+  author           User?         @relation(fields: [authorId], references: [id])
+  parent           Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies          Comment[]     @relation("CommentReplies")
+  post             Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([parentId])
+  @@index([status])
+  @@index([moderationStatus])
+  @@index([aiReviewed])
+  @@index([createdAt])
+  @@map("comments")
+}
+
+model CommentLike {
+  id        String   @id @default(uuid())
+  commentId String
+  userId    String?
+  sessionId String?
+  isLike    Boolean
+  ipAddress String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+  @@unique([commentId, sessionId])
+  @@index([commentId])
+  @@index([userId])
+  @@index([sessionId])
+  @@map("comment_likes")
+}
+
+model AiUsage {
+  id         String   @id @default(uuid())
+  month      String   @unique
+  tokensUsed Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([month])
+  @@map("ai_usage")
+}
+
+model NewsletterDraft {
+  id               String   @id @default(uuid())
+  date             DateTime
+  subject          String
+  intro            String
+  topics           Json
+  cta              String?
+  status           String   @default("draft")
+  publishedIssueId String?  @unique
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([status, date])
+  @@map("newsletter_drafts")
+}
+
+model NewsletterSource {
+  id        String   @id @default(uuid())
+  type      String
+  url       String?
+  title     String
+  content   String?
+  metadata  Json?
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([type, used])
+  @@map("newsletter_sources")
+}
+
+model NewsletterTemplate {
+  id          String                    @id @default(uuid())
+  name        String
+  slug        String                    @unique
+  description String?
+  thumbnail   String?
+  htmlContent String
+  jsonContent Json?
+  category    String
+  isDefault   Boolean                   @default(false)
+  createdAt   DateTime                  @default(now())
+  updatedAt   DateTime                  @updatedAt
+  campaigns   NewsletterCampaign[]
+  issues      NewsletterIssueEnhanced[]
+
+  @@index([category])
+  @@map("newsletter_templates")
+}
+
+model NewsletterCampaign {
+  id           String                  @id @default(uuid())
+  name         String
+  subject      String
+  preheader    String?
+  fromName     String
+  fromEmail    String
+  replyTo      String?
+  htmlContent  String
+  textContent  String?
+  templateId   String?
+  status       String                  @default("draft")
+  scheduledAt  DateTime?
+  sentAt       DateTime?
+  stats        Json?
+  tags         Json?
+  testEmails   Json?
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+  template     NewsletterTemplate?     @relation(fields: [templateId], references: [id])
+  interactions NewsletterInteraction[]
+  recipients   NewsletterRecipient[]
+
+  @@index([status, scheduledAt])
+  @@map("newsletter_campaigns")
+}
+
+model NewsletterRecipient {
+  id           String               @id @default(uuid())
+  campaignId   String
+  subscriberId String
+  status       String               @default("pending")
+  sentAt       DateTime?
+  openedAt     DateTime?
+  clickedAt    DateTime?
+  createdAt    DateTime             @default(now())
+  subscriber   NewsletterSubscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  campaign     NewsletterCampaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, subscriberId])
+  @@index([status])
+  @@map("newsletter_recipients")
+}
+
+model NewsletterList {
+  id          String                     @id @default(uuid())
+  name        String
+  description String?
+  isDefault   Boolean                    @default(false)
+  createdAt   DateTime                   @default(now())
+  updatedAt   DateTime                   @updatedAt
+  subscribers NewsletterListSubscriber[]
+
+  @@map("newsletter_lists")
+}
+
+model NewsletterListSubscriber {
+  id           String               @id @default(uuid())
+  listId       String
+  subscriberId String
+  createdAt    DateTime             @default(now())
+  subscriber   NewsletterSubscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  list         NewsletterList       @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, subscriberId])
+  @@map("newsletter_list_subscribers")
+}
+
+model NewsletterConsent {
+  id             String               @id @default(uuid())
+  subscriberId   String
+  consentType    ConsentType
+  consentGiven   Boolean              @default(false)
+  consentMethod  String
+  ipAddress      String?
+  userAgent      String?
+  legalBasis     String?
+  consentText    String?
+  consentVersion String?
+  withdrawnAt    DateTime?
+  withdrawReason String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  subscriber     NewsletterSubscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+
+  @@index([subscriberId])
+  @@index([consentType])
+  @@index([consentGiven])
+  @@index([createdAt])
+  @@map("newsletter_consents")
+}
+
+model NewsletterInteraction {
+  id              String                @id @default(uuid())
+  subscriberId    String?
+  campaignId      String?
+  interactionType InteractionType
+  timestamp       DateTime              @default(now())
+  ipAddress       String?
+  userAgent       String?
+  linkUrl         String?
+  metadata        Json?
+  campaign        NewsletterCampaign?   @relation(fields: [campaignId], references: [id])
+  subscriber      NewsletterSubscriber? @relation(fields: [subscriberId], references: [id])
+
+  @@index([subscriberId])
+  @@index([campaignId])
+  @@index([interactionType])
+  @@index([timestamp])
+  @@map("newsletter_interactions")
+}
+
+model NewsletterIssueEnhanced {
+  id                  String              @id @default(uuid())
+  subject             String
+  preheader           String?
+  htmlContent         String
+  textContent         String?
+  templateId          String?
+  autoFilled          Boolean             @default(false)
+  contentSources      Json?
+  utmSource           String?
+  utmMedium           String              @default("email")
+  utmCampaign         String?
+  utmContent          String?
+  fromName            String              @default("FluxAO")
+  fromEmail           String              @default("newsletter@fluxao.com")
+  replyTo             String?
+  listUnsubscribe     String?
+  listUnsubscribePost String?
+  status              IssueStatus         @default("DRAFT")
+  scheduledAt         DateTime?
+  sentAt              DateTime?
+  totalSent           Int                 @default(0)
+  totalOpened         Int                 @default(0)
+  totalClicked        Int                 @default(0)
+  totalBounced        Int                 @default(0)
+  totalUnsubscribed   Int                 @default(0)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  template            NewsletterTemplate? @relation(fields: [templateId], references: [id])
+
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([sentAt])
+  @@map("newsletter_issues_enhanced")
+}
+
+model AnalyticsEvent {
+  id           String   @id @default(uuid())
+  type         String
+  path         String?
+  properties   Json?
+  sessionId    String?
+  userAgent    String?
+  ipAddress    String?
+  referrer     String?
+  country      String?
+  consentGiven Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([type, createdAt])
+  @@index([sessionId])
+  @@index([path])
+  @@map("analytics_events")
+}
+
+model ConsentRecord {
+  id               String   @id @default(uuid())
+  sessionId        String   @unique
+  analyticsConsent Boolean  @default(false)
+  marketingConsent Boolean  @default(false)
+  ipAddress        String?
+  userAgent        String?
+  consentGivenAt   DateTime
+  lastUpdated      DateTime @updatedAt
+  expiresAt        DateTime
+
+  @@index([sessionId])
+  @@index([expiresAt])
+  @@map("consent_records")
+}
+
+model ABTest {
+  id                String             @id
+  name              String
+  description       String?
+  status            ABTestStatus       @default("DRAFT")
+  targetMetric      String
+  trafficAllocation Int                @default(100)
+  startDate         DateTime?
+  endDate           DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  assignments       ABTestAssignment[]
+  events            ABTestEvent[]
+  variants          ABTestVariant[]
+
+  @@index([status])
+  @@map("ab_tests")
+}
+
+model ABTestVariant {
+  id        String   @id
+  testId    String
+  name      String
+  weight    Int      @default(50)
+  config    Json?
+  createdAt DateTime @default(now())
+  test      ABTest   @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@unique([testId, id])
+  @@map("ab_test_variants")
+}
+
+model ABTestAssignment {
+  id         String   @id @default(uuid())
+  testId     String
+  variantId  String
+  userId     String?
+  sessionId  String
+  assignedAt DateTime @default(now())
+  test       ABTest   @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@unique([testId, sessionId])
+  @@index([testId, variantId])
+  @@index([sessionId])
+  @@index([userId])
+  @@map("ab_test_assignments")
+}
+
+model ABTestEvent {
+  id        String   @id @default(uuid())
+  testId    String
+  variantId String
+  eventType String
+  userId    String?
+  sessionId String
+  metadata  Json?
+  createdAt DateTime @default(now())
+  test      ABTest   @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@index([testId, variantId, eventType])
+  @@index([sessionId])
+  @@index([eventType, createdAt])
+  @@map("ab_test_events")
+}
+
+model ConversionEvent {
+  id        String   @id @default(uuid())
+  source    String
+  variant   String?
+  stage     String
+  sessionId String
+  userId    String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([source, stage, createdAt])
+  @@index([variant, stage, createdAt])
+  @@index([sessionId])
+  @@index([stage, createdAt])
+  @@map("conversion_events")
+}
+
+model FeatureFlag {
+  id          String   @id
+  name        String
+  description String?
+  enabled     Boolean  @default(false)
+  percentage  Int      @default(0)
+  userIds     Json?
+  conditions  Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([enabled])
+  @@map("feature_flags")
+}
+
+model Subscription {
+  id                   String             @id @default(uuid())
+  userId               String             @unique
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
+  stripePriceId        String?
+  status               SubscriptionStatus @default("INACTIVE")
+  plan                 SubscriptionPlan   @default("FREE")
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  cancelledAt          DateTime?
+  trialStart           DateTime?
+  trialEnd             DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  invoices             Invoice[]
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([plan])
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
+  @@map("subscriptions")
+}
+
+model Invoice {
+  id                    String       @id @default(uuid())
+  subscriptionId        String
+  stripeInvoiceId       String       @unique
+  stripePaymentIntentId String?
+  amount                Int
+  currency              String       @default("usd")
+  status                String
+  description           String?
+  periodStart           DateTime
+  periodEnd             DateTime
+  paid                  Boolean      @default(false)
+  paidAt                DateTime?
+  hostedInvoiceUrl      String?
+  invoicePdf            String?
+  createdAt             DateTime     @default(now())
+  subscription          Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId])
+  @@index([status])
+  @@index([stripeInvoiceId])
+  @@map("invoices")
+}
+
+model AffiliateLink {
+  id          String           @id @default(uuid())
+  name        String
+  url         String
+  affiliateId String
+  program     String
+  category    String?
+  description String?
+  isActive    Boolean          @default(true)
+  clicks      Int              @default(0)
+  conversions Int              @default(0)
+  revenue     Float            @default(0)
+  createdBy   String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  clickEvents AffiliateClick[]
+
+  @@unique([url, program, affiliateId])
+  @@index([program, isActive])
+  @@index([createdBy])
+  @@map("affiliate_links")
+}
+
+model AffiliateClick {
+  id        String        @id @default(uuid())
+  linkId    String
+  sessionId String?
+  userId    String?
+  ipAddress String?
+  userAgent String?
+  referrer  String?
+  clickedAt DateTime      @default(now())
+  link      AffiliateLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+
+  @@index([linkId, clickedAt])
+  @@index([sessionId])
+  @@map("affiliate_clicks")
+}
+
+model AdSlot {
+  id               String         @id @default(uuid())
+  name             String
+  position         String
+  size             String
+  adCode           String
+  isActive         Boolean        @default(true)
+  priority         Int            @default(0)
+  impressions      Int            @default(0)
+  clicks           Int            @default(0)
+  revenue          Float          @default(0)
+  startDate        DateTime?
+  endDate          DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  impressionEvents AdImpression[]
+
+  @@index([position, isActive])
+  @@index([priority])
+  @@map("ad_slots")
+}
+
+model AdImpression {
+  id        String   @id @default(uuid())
+  slotId    String
+  sessionId String?
+  userId    String?
+  ipAddress String?
+  userAgent String?
+  viewedAt  DateTime @default(now())
+  slot      AdSlot   @relation(fields: [slotId], references: [id], onDelete: Cascade)
+
+  @@index([slotId, viewedAt])
+  @@index([sessionId])
+  @@map("ad_impressions")
+}
+
+model PremiumContent {
+  id            String           @id @default(uuid())
+  postId        String?          @unique
+  title         String
+  description   String?
+  requiredPlan  SubscriptionPlan
+  previewLength Int              @default(300)
+  isActive      Boolean          @default(true)
+  views         Int              @default(0)
+  subscribers   Int              @default(0)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  post          Post?            @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([requiredPlan, isActive])
+  @@map("premium_content")
+}
+
+model RevenueRecord {
+  id          String      @id @default(uuid())
+  type        RevenueType
+  source      String
+  amount      Float
+  currency    String      @default("EUR")
+  description String?
+  metadata    Json?
+  recordedAt  DateTime    @default(now())
+
+  @@index([type, recordedAt])
+  @@index([source])
+  @@map("revenue_records")
+}
+
+model Follow {
+  id          String   @id @default(uuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  following   User     @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+  follower    User     @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@index([createdAt])
+  @@map("follows")
+}
+
+model SupportTicket {
+  id             String                  @id @default(uuid())
+  ticketId       String                  @unique
+  subject        String
+  category       String
+  priority       String
+  status         String                  @default("open")
+  description    String
+  email          String
+  name           String
+  userId         String?
+  attachments    Json?
+  metadata       Json?
+  lastResponseAt DateTime?
+  resolvedAt     DateTime?
+  closedAt       DateTime?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  responses      SupportTicketResponse[]
+  user           User?                   @relation(fields: [userId], references: [id])
+
+  @@index([ticketId])
+  @@index([userId])
+  @@index([status])
+  @@index([priority])
+  @@index([category])
+  @@index([createdAt])
+  @@map("support_tickets")
+}
+
+model SupportTicketResponse {
+  id        String        @id @default(uuid())
+  ticketId  String
+  message   String
+  isStaff   Boolean       @default(false)
+  staffId   String?
+  createdAt DateTime      @default(now())
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@index([createdAt])
+  @@map("support_ticket_responses")
+}
+
+model Flux {
+  userId    String
+  postId    String
+  count     Int      @default(0)
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, postId])
+  @@index([postId])
+  @@index([userId])
+  @@map("flux")
+}
+
+model ArticleVote {
+  userId    String
+  postId    String
+  type      VoteType
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, postId])
+  @@index([postId])
+  @@index([userId])
+  @@index([postId, type])
+  @@map("article_votes")
+}
+
+model ReadingHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  postId    String
+  minutes   Int      @default(0)
+  lastDepth Int      @default(0)
+  lastAt    DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@index([userId])
+  @@index([postId])
+  @@index([lastAt])
+  @@map("reading_history")
+}
+
+model PostScore {
+  id        String   @id @default(uuid())
+  postId    String   @unique
+  score     Float    @default(0)
+  views     Int      @default(0)
+  minutes   Int      @default(0)
+  fluxTotal Int      @default(0)
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([score])
+  @@index([updatedAt])
+  @@map("post_scores")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model SecurityEvent {
+  id        String   @id @default(uuid())
+  type      String
+  severity  String
+  userId    String?
+  email     String?
+  ipAddress String?
+  userAgent String?
+  message   String
+  metadata  Json?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([type])
+  @@index([severity])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("security_events")
+}
+
+model ApiKey {
+  id        String    @id @default(uuid())
+  name      String
+  key       String    @unique
+  userId    String
+  lastUsed  DateTime?
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([key])
+  @@index([userId])
+  @@map("api_keys")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  action     String
+  userId     String?
+  targetId   String?
+  targetType String?
+  metadata   Json?
+  ip         String?
+  userAgent  String?
+  status     String
+  message    String?
+  createdAt  DateTime @default(now())
+  user       User?    @relation(fields: [userId], references: [id])
+
+  @@index([action])
+  @@index([userId])
+  @@index([targetId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model MediaAsset {
+  id           String    @id @default(uuid())
+  userId       String
+  url          String
+  publicId     String?
+  type         MediaType
+  format       String
+  size         Int
+  width        Int?
+  height       Int?
+  duration     Int?
+  thumbnailUrl String?
+  metadata     Json
+  isPublic     Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([isPublic])
+  @@index([createdAt])
+  @@map("media_assets")
+}
+
+model SavedFilter {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  filters   Json
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, isDefault])
+  @@map("saved_filters")
+}
+
+model PostAnalytics {
+  id              String         @id @default(uuid())
+  postId          String         @unique
+  views           Int            @default(0)
+  uniqueVisitors  Int            @default(0)
+  avgReadTime     Float          @default(0)
+  bounceRate      Float          @default(0)
+  scrollDepth     Float          @default(0)
+  engagementScore Float          @default(0)
+  shareCount      Int            @default(0)
+  commentCount    Int            @default(0)
+  likeCount       Int            @default(0)
+  dislikeCount    Int            @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  post            Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userActivities  UserActivity[]
+
+  @@index([postId])
+  @@index([views])
+  @@index([engagementScore])
+  @@index([updatedAt])
+  @@map("post_analytics")
+}
+
+model UserActivity {
+  id               String         @id @default(uuid())
+  postId           String?
+  postAnalyticsId  String?
+  sessionId        String
+  userId           String?
+  activityType     ActivityType
+  timeOnPage       Int?
+  scrollPercentage Int?
+  clickData        Json?
+  exitPage         Boolean        @default(false)
+  referrer         String?
+  userAgent        String?
+  ipHash           String?
+  country          String?
+  deviceType       DeviceType     @default("UNKNOWN")
+  browserName      String?
+  osName           String?
+  screenResolution String?
+  consentGiven     Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  user             User?          @relation(fields: [userId], references: [id])
+  postAnalytics    PostAnalytics? @relation(fields: [postAnalyticsId], references: [id])
+  post             Post?          @relation(fields: [postId], references: [id])
+
+  @@index([sessionId])
+  @@index([postId])
+  @@index([userId])
+  @@index([activityType])
+  @@index([createdAt])
+  @@index([consentGiven])
+  @@map("user_activities")
+}
+
+model SessionAnalytics {
+  id           String     @id @default(uuid())
+  sessionId    String     @unique
+  userId       String?
+  firstPage    String?
+  lastPage     String?
+  pageViews    Int        @default(0)
+  totalTime    Int        @default(0)
+  bounced      Boolean    @default(false)
+  converted    Boolean    @default(false)
+  referrer     String?
+  utmSource    String?
+  utmMedium    String?
+  utmCampaign  String?
+  utmContent   String?
+  utmTerm      String?
+  deviceType   DeviceType @default("UNKNOWN")
+  browserName  String?
+  osName       String?
+  country      String?
+  ipHash       String?
+  consentGiven Boolean    @default(false)
+  startedAt    DateTime   @default(now())
+  endedAt      DateTime?
+  updatedAt    DateTime   @updatedAt
+  user         User?      @relation(fields: [userId], references: [id])
+
+  @@index([sessionId])
+  @@index([userId])
+  @@index([startedAt])
+  @@index([bounced])
+  @@index([converted])
+  @@index([consentGiven])
+  @@map("session_analytics")
+}
+
+model TrendingArticle {
+  id                  String   @id @default(uuid())
+  postId              String   @unique
+  trendingScore       Float    @default(0)
+  timeframe           String
+  views24h            Int      @default(0)
+  views7d             Int      @default(0)
+  views30d            Int      @default(0)
+  engagements24h      Int      @default(0)
+  engagements7d       Int      @default(0)
+  engagements30d      Int      @default(0)
+  peakHour            Int?
+  isCurrentlyTrending Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  post                Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([trendingScore])
+  @@index([timeframe])
+  @@index([isCurrentlyTrending])
+  @@index([peakHour])
+  @@map("trending_articles")
+}
+
+model Quote {
+  id         String        @id @default(uuid())
+  text       String
+  author     String
+  profession String?
+  year       Int?
+  source     String?
+  category   QuoteCategory @default("TECHNOLOGY")
+  isActive   Boolean       @default(true)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  createdBy  String?
+  user       User?         @relation(fields: [createdBy], references: [id])
+
+  @@index([isActive])
+  @@index([category])
+  @@index([createdAt])
+  @@map("quotes")
+}
+
+model AITaskLog {
+  id           String   @id @default(uuid())
+  userId       String
+  provider     String
+  model        String?
+  task         String
+  prompt       String?
+  response     String?
+  success      Boolean  @default(true)
+  tokensUsed   Int      @default(0)
+  responseTime Int      @default(0)
+  cost         Float?
+  error        String?
+  metadata     Json?
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([provider])
+  @@index([task])
+  @@index([success])
+  @@index([createdAt])
+  @@map("ai_task_logs")
+}
+
+model SystemMetrics {
+  id        String   @id @default(uuid())
+  timestamp DateTime @default(now())
+  data      Json
+  createdAt DateTime @default(now())
+
+  @@index([timestamp])
+  @@map("system_metrics")
+}
+
+model SystemAlert {
+  id         String    @id @default(uuid())
+  alertId    String    @unique
+  type       String
+  category   String
+  message    String
+  details    Json?
+  severity   Int
+  resolved   Boolean   @default(false)
+  resolvedAt DateTime?
+  resolvedBy String?
+  timestamp  DateTime  @default(now())
+
+  @@index([type])
+  @@index([category])
+  @@index([severity])
+  @@index([resolved])
+  @@index([timestamp])
+  @@map("system_alerts")
+}
+
+model AIProvider {
+  id            String    @id @default(uuid())
+  name          String    @unique
+  displayName   String
+  apiKey        String?
+  endpoint      String?
+  isActive      Boolean   @default(true)
+  isAvailable   Boolean   @default(true)
+  maxTokens     Int       @default(4000)
+  costPerToken  Float?
+  rateLimit     Int       @default(60)
+  priority      Int       @default(1)
+  capabilities  Json?
+  config        Json?
+  lastCheck     DateTime?
+  errorCount    Int       @default(0)
+  totalRequests Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([name])
+  @@index([isActive])
+  @@index([isAvailable])
+  @@index([priority])
+  @@map("ai_providers")
+}
+
+model AIAutomationRule {
+  id           String    @id @default(uuid())
+  name         String
+  description  String?
+  trigger      String
+  conditions   Json
+  actions      Json
+  provider     String?
+  isActive     Boolean   @default(true)
+  lastRun      DateTime?
+  nextRun      DateTime?
+  runCount     Int       @default(0)
+  successCount Int       @default(0)
+  errorCount   Int       @default(0)
+  createdBy    String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([trigger])
+  @@index([isActive])
+  @@index([nextRun])
+  @@index([createdBy])
+  @@map("ai_automation_rules")
+}
+
+model AIChat {
+  id        String      @id @default(uuid())
+  userId    String
+  title     String?
+  metadata  Json?
+  isActive  Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  AIMessage[]
+
+  @@index([userId])
+  @@index([isActive])
+  @@index([createdAt])
+  @@map("ai_chats")
+}
+
+model AIMessage {
+  id        String   @id @default(uuid())
+  chatId    String
+  role      String
+  content   String
+  provider  String?
+  model     String?
+  tokens    Int?
+  cost      Float?
+  metadata  Json?
+  createdAt DateTime @default(now())
+  chat      AIChat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
+  @@index([role])
+  @@index([createdAt])
+  @@map("ai_messages")
+}
+
+model AIUsageQuota {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  dailyLimit       Int      @default(100)
+  monthlyLimit     Int      @default(2000)
+  tokenLimit       Int      @default(50000)
+  dailyUsed        Int      @default(0)
+  monthlyUsed      Int      @default(0)
+  tokensUsed       Int      @default(0)
+  lastResetDaily   DateTime @default(now())
+  lastResetMonthly DateTime @default(now())
+  lastActivity     DateTime @default(now())
+  isBlocked        Boolean  @default(false)
+  blockReason      String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isBlocked])
+  @@index([lastActivity])
+  @@map("ai_usage_quotas")
+}
+
+model AIPermission {
+  id                  String   @id @default(uuid())
+  userId              String   @unique
+  canUseAI            Boolean  @default(false)
+  canUseWriter        Boolean  @default(false)
+  canUseMultiProvider Boolean  @default(false)
+  canViewMonitoring   Boolean  @default(false)
+  canManageRules      Boolean  @default(false)
+  allowedProviders    Json?
+  maxDailyRequests    Int      @default(50)
+  maxTokensPerDay     Int      @default(10000)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([canUseAI])
+  @@map("ai_permissions")
+}
+
+model Notification {
+  id           String               @id @default(uuid())
+  type         NotificationType
+  category     NotificationCategory
+  title        String
+  message      String
+  description  String?
+  actionUrl    String?
+  actionLabel  String?
+  userId       String?
+  role         Role?
+  isRead       Boolean              @default(false)
+  isArchived   Boolean              @default(false)
+  isDismissed  Boolean              @default(false)
+  priority     NotificationPriority @default("NORMAL")
+  sourceId     String?
+  sourceType   String?
+  data         Json?
+  aiGenerated  Boolean              @default(false)
+  generatedBy  String?
+  scheduledFor DateTime?
+  expiresAt    DateTime?
+  clickedAt    DateTime?
+  readAt       DateTime?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  user         User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type, category])
+  @@index([priority, isRead])
+  @@index([createdAt])
+  @@index([scheduledFor])
+  @@index([expiresAt])
+  @@index([isArchived, isDismissed])
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id                     String          @id @default(uuid())
+  userId                 String          @unique
+  emailAITasks           Boolean         @default(true)
+  emailSystemAlerts      Boolean         @default(true)
+  emailContentAlerts     Boolean         @default(true)
+  emailPerformanceAlerts Boolean         @default(true)
+  emailSecurityAlerts    Boolean         @default(true)
+  showAITasks            Boolean         @default(true)
+  showSystemAlerts       Boolean         @default(true)
+  showContentAlerts      Boolean         @default(true)
+  showPerformanceAlerts  Boolean         @default(true)
+  showSecurityAlerts     Boolean         @default(true)
+  digestFrequency        DigestFrequency @default("IMMEDIATE")
+  quietHoursStart        Int?
+  quietHoursEnd          Int?
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+  user                   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("notification_preferences")
+}
+
+model TrendTopic {
+  id           String   @id @default(uuid())
+  title        String
+  teaser       String?
+  url          String
+  source       String
+  category     String
+  score        Int      @default(0)
+  uniqueHash   String   @unique
+  discoveredAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([category])
+  @@index([source])
+  @@index([score])
+  @@index([discoveredAt])
+  @@index([uniqueHash])
+  @@map("trend_topics")
+}
+
+enum ConsentType {
+  SIGNUP
+  MARKETING
+  ANALYTICS
+  TRACKING
+  THIRD_PARTY
+}
+
+enum InteractionType {
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  UNSUBSCRIBED
+  BOUNCED
+  COMPLAINED
+  FORWARDED
+}
+
+enum IssueStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  FAILED
+  CANCELLED
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  PREMIUM
+  USER
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ContentType {
+  TUTORIAL
+  NEWS
+  OPINION
+  INTERVIEW
+  REVIEW
+  DEEP_DIVE
+}
+
+enum DifficultyLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SPAM
+}
+
+enum ABTestStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+enum SubscriptionStatus {
+  INACTIVE
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  TRIALING
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum RevenueType {
+  SUBSCRIPTION
+  AFFILIATE
+  ADVERTISING
+  DONATION
+}
+
+enum VoteType {
+  like
+  dislike
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+}
+
+enum ActivityType {
+  PAGE_VIEW
+  SCROLL
+  CLICK
+  SHARE
+  COMMENT
+  LIKE
+  DISLIKE
+  COPY_TEXT
+  SEARCH
+  NEWSLETTER_SIGNUP
+  SUBSCRIPTION
+  EXIT_INTENT
+}
+
+enum DeviceType {
+  DESKTOP
+  MOBILE
+  TABLET
+  BOT
+  UNKNOWN
+}
+
+enum QuoteCategory {
+  TECHNOLOGY
+  AI
+  PHILOSOPHY
+  FUTURE
+  INNOVATION
+  SOCIETY
+  SCIENCE
+  WISDOM
+}
+
+enum NotificationType {
+  AI_TASK
+  SYSTEM_ALERT
+  CONTENT_ALERT
+  PERFORMANCE_ALERT
+  SECURITY_ALERT
+  USER_ACTION
+  REMINDER
+  SUCCESS
+  WARNING
+  ERROR
+  INFO
+}
+
+enum NotificationCategory {
+  MODERATION
+  ANALYTICS
+  SYSTEM_HEALTH
+  CONTENT_MANAGEMENT
+  USER_MANAGEMENT
+  AI_AUTOMATION
+  SECURITY
+  PERFORMANCE
+  NEWSLETTER
+  REVENUE
+  GENERAL
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+  CRITICAL
+}
+
+enum DigestFrequency {
+  IMMEDIATE
+  HOURLY
+  DAILY
+  WEEKLY
+  DISABLED
+}

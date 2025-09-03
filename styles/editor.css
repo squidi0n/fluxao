@@ -1,0 +1,61 @@
+/* TipTap Editor Styles */
+
+/* Make resize handle more visible */
+.editor-container .resize-y {
+  resize: vertical;
+  position: relative;
+}
+
+/* Style the resize handle */
+.editor-container .resize-y::-webkit-resizer {
+  background: transparent;
+}
+
+.editor-container .resize-y::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  cursor: ns-resize;
+  background: linear-gradient(
+    135deg,
+    transparent 50%,
+    #9ca3af 50%,
+    #9ca3af 60%,
+    transparent 60%,
+    transparent 70%,
+    #9ca3af 70%,
+    #9ca3af 80%,
+    transparent 80%
+  );
+  border-bottom-right-radius: 4px;
+  pointer-events: none;
+}
+
+/* Dark mode resize handle */
+.dark .editor-container .resize-y::after {
+  background: linear-gradient(
+    135deg,
+    transparent 50%,
+    #4b5563 50%,
+    #4b5563 60%,
+    transparent 60%,
+    transparent 70%,
+    #4b5563 70%,
+    #4b5563 80%,
+    transparent 80%
+  );
+}
+
+/* Ensure proper overflow handling */
+.editor-container .resize-y {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Smooth transition for resizing */
+.editor-container .resize-y {
+  transition: height 0.1s ease-out;
+}

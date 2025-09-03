@@ -1,0 +1,158 @@
+/* Typography Styles for Article Content */
+
+.prose {
+  @apply text-gray-700 dark:text-gray-300;
+}
+
+.prose h1 {
+  @apply text-3xl font-bold text-gray-900 dark:text-white mb-6 mt-8;
+}
+
+.prose h2 {
+  @apply text-2xl font-bold text-gray-900 dark:text-white mb-4 mt-8;
+}
+
+.prose h3 {
+  @apply text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6;
+}
+
+.prose h4 {
+  @apply text-lg font-semibold text-gray-900 dark:text-white mb-2 mt-4;
+}
+
+.prose p {
+  @apply mb-4 leading-relaxed;
+}
+
+.prose .lead {
+  @apply text-xl text-gray-600 dark:text-gray-400 mb-6;
+}
+
+.prose a {
+  @apply text-blue-600 dark:text-blue-400 underline hover:text-blue-800 dark:hover:text-blue-300;
+}
+
+.prose strong {
+  @apply font-semibold text-gray-900 dark:text-white;
+}
+
+.prose em {
+  @apply italic;
+}
+
+.prose ul {
+  @apply list-disc list-inside mb-4 space-y-2;
+}
+
+.prose ol {
+  @apply list-decimal list-inside mb-4 space-y-2;
+}
+
+.prose li {
+  @apply pl-2;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-blue-500 pl-4 py-2 my-6 italic text-gray-700 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50;
+}
+
+.prose pre {
+  @apply bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto mb-4;
+}
+
+.prose code {
+  @apply bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm font-mono;
+}
+
+.prose pre code {
+  @apply bg-transparent p-0;
+}
+
+.prose img {
+  @apply rounded-lg w-full my-6;
+}
+
+.prose figure {
+  @apply my-8;
+}
+
+.prose figcaption {
+  @apply text-sm text-gray-500 dark:text-gray-400 text-center mt-2;
+}
+
+.prose table {
+  @apply w-full mb-6;
+}
+
+.prose th {
+  @apply bg-gray-100 dark:bg-gray-800 font-semibold text-left p-3 border-b-2 border-gray-300 dark:border-gray-600;
+}
+
+.prose td {
+  @apply p-3 border-b border-gray-200 dark:border-gray-700;
+}
+
+.prose hr {
+  @apply border-gray-300 dark:border-gray-700 my-8;
+}
+
+/* Pull Quotes */
+.prose .pull-quote {
+  @apply text-2xl font-light text-gray-700 dark:text-gray-300 border-l-4 border-purple-500 pl-6 my-8 italic;
+}
+
+/* Code Blocks with Syntax Highlighting */
+.prose .code-block {
+  @apply relative;
+}
+
+.prose .code-block .language-label {
+  @apply absolute top-0 right-0 px-2 py-1 text-xs text-gray-400 bg-gray-800 rounded-bl;
+}
+
+/* Responsive Video Embeds */
+.prose .video-wrapper {
+  @apply relative pb-[56.25%] h-0 overflow-hidden rounded-lg my-6;
+}
+
+.prose .video-wrapper iframe {
+  @apply absolute top-0 left-0 w-full h-full;
+}
+
+/* Reading Progress Indicator */
+.reading-progress {
+  @apply fixed top-0 left-0 w-full h-1 bg-gray-200 dark:bg-gray-800 z-50;
+}
+
+.reading-progress-bar {
+  @apply h-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-150;
+}
+
+/* Table of Contents */
+.toc {
+  @apply bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6 mb-8;
+}
+
+.toc-title {
+  @apply text-lg font-semibold text-gray-900 dark:text-white mb-4;
+}
+
+.toc-list {
+  @apply space-y-2;
+}
+
+.toc-item {
+  @apply text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors;
+}
+
+.toc-item-h2 {
+  @apply pl-0;
+}
+
+.toc-item-h3 {
+  @apply pl-4;
+}
+
+.toc-item-h4 {
+  @apply pl-8;
+}

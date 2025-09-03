@@ -1,0 +1,263 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import '../styles/editor.css';
+
+/* Custom Font: Good Timing Bold */
+@font-face {
+  font-family: 'Good Timing';
+  src: url('/fonts/good%20timing%20bd.otf') format('opentype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  /* Standard ist immer Light Mode */
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 224 71.4% 4.1%;
+    --primary: 0 84.2% 60.2%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 220 13% 96%;
+    --secondary-foreground: 224 71.4% 4.1%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 224 71.4% 4.1%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 0 84.2% 60.2%;
+    --radius: 0.5rem;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
+  }
+
+  .dark {
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
+    --primary: 0 84.2% 60.2%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 0 84.2% 60.2%;
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
+  }
+
+  /* Beautiful Blue-Gray Theme */
+  .blue-theme {
+    --background: 210 25% 9%;
+    --foreground: 210 20% 98%;
+    --primary: 200 80% 50%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 210 20% 20%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 210 20% 15%;
+    --muted-foreground: 210 20% 70%;
+    --accent: 200 60% 40%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 62.8% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 210 20% 25%;
+    --input: 210 20% 18%;
+    --ring: 200 80% 50%;
+    --popover: 210 25% 9%;
+    --popover-foreground: 210 20% 98%;
+  }
+
+  /* Theme-specific styles */
+  .blue-theme {
+    background: linear-gradient(180deg, hsl(210 25% 9%) 0%, hsl(210 30% 12%) 100%);
+  }
+
+  .blue-theme .bg-white {
+    @apply bg-slate-800;
+  }
+
+  .blue-theme .bg-gray-50 {
+    @apply bg-slate-900;
+  }
+
+  .blue-theme .text-gray-900 {
+    @apply text-slate-100;
+  }
+
+  .blue-theme .text-gray-700 {
+    @apply text-slate-300;
+  }
+
+  .blue-theme .text-gray-600 {
+    @apply text-slate-400;
+  }
+
+  .blue-theme .text-gray-500 {
+    @apply text-slate-500;
+  }
+
+  .blue-theme .border-gray-200 {
+    @apply border-slate-700;
+  }
+
+  .blue-theme .hover\:bg-gray-100:hover {
+    @apply hover:bg-slate-700;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
+  }
+  
+  /* Accessibility improvements */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  
+  .focus\:not-sr-only:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: revert;
+    margin: revert;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+  
+  /* Improved focus styles */
+  *:focus-visible {
+    outline: 2px solid #9333ea;
+    outline-offset: 2px;
+  }
+  
+  /* Better contrast for gray text - WCAG AA compliance */
+  .text-gray-500 {
+    @apply text-gray-600;
+  }
+  
+  /* Ensure all gray-500 variants meet 4.5:1 contrast ratio */
+  .dark .text-gray-500 {
+    @apply text-gray-400;
+  }
+  
+  /* Additional contrast improvements */
+  .placeholder-gray-500::placeholder {
+    @apply placeholder-gray-600;
+  }
+  
+  .dark .placeholder-gray-500::placeholder {
+    @apply placeholder-gray-400;
+  }
+  
+  /* Ensure minimum touch target sizes */
+  button, 
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Touch-friendly links */
+  a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+@layer utilities {
+  /* Enhanced animations for landing page */
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-fade-in-up {
+    animation: fade-in-up 0.8s ease-out forwards;
+    opacity: 0;
+  }
+  
+  /* Smooth reveal on scroll */
+  @keyframes reveal {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  
+  .animate-reveal {
+    animation: reveal 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+  }
+  
+  /* Staggered animations */
+  .animate-stagger-1 { animation-delay: 0.1s; }
+  .animate-stagger-2 { animation-delay: 0.2s; }
+  .animate-stagger-3 { animation-delay: 0.3s; }
+  .animate-stagger-4 { animation-delay: 0.4s; }
+  .animate-stagger-5 { animation-delay: 0.5s; }
+  
+  /* Floating animations for decoration */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-float-delayed {
+    animation: float 6s ease-in-out infinite;
+    animation-delay: -3s;
+  }
+  
+  /* Gradient animations */
+  @keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  .animate-gradient {
+    background-size: 400% 400%;
+    animation: gradient-shift 8s ease infinite;
+  }
+}

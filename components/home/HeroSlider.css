@@ -1,0 +1,145 @@
+/* Hero Slider Animations - Performance optimized */
+:root {
+  --hero-transition: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --hero-duration: 1.2s;
+}
+
+.slide-enter {
+  opacity: 0;
+  transform: translateX(100%) translateZ(0);
+}
+
+.slide-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: all 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slide-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.slide-exit-active {
+  opacity: 0;
+  transform: translateX(-100%);
+  transition: all 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Fade transition */
+.fade-enter {
+  opacity: 0;
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transition: opacity 800ms ease-in-out;
+}
+
+.fade-exit {
+  opacity: 1;
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transition: opacity 800ms ease-in-out;
+}
+
+/* Ultra-smooth crossfade approach */
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: translateZ(0);
+  transition: opacity 3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity;
+  backface-visibility: hidden;
+}
+
+.hero-slide.active {
+  opacity: 1;
+  transform: translateZ(0);
+}
+
+/* Ensure image is always ready */
+.hero-slide img {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.hero-slide.active img {
+  animation: slowZoom 8s ease-out forwards;
+}
+
+@keyframes slowZoom {
+  from {
+    transform: scale(1) translateZ(0);
+  }
+  to {
+    transform: scale(1.08) translateZ(0);
+  }
+}
+
+/* Content animations - Smoother */
+.hero-content {
+  animation: slideUp 1000ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  opacity: 0;
+  transform: translateY(30px) translateZ(0);
+  will-change: opacity, transform;
+}
+
+.hero-slide.active .hero-content {
+  opacity: 1;
+  transform: translateY(0);
+  animation-delay: 300ms;
+}
+
+/* Stagger animations for elements - Smoother and faster */
+.hero-category {
+  animation: fadeInUp 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  opacity: 0;
+  transform: translateY(20px) translateZ(0);
+  will-change: opacity, transform;
+}
+
+.hero-title {
+  animation: fadeInUp 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation-delay: 80ms;
+  opacity: 0;
+  transform: translateY(20px) translateZ(0);
+  will-change: opacity, transform;
+}
+
+.hero-teaser {
+  animation: fadeInUp 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation-delay: 160ms;
+  opacity: 0;
+  transform: translateY(20px) translateZ(0);
+  will-change: opacity, transform;
+}
+
+.hero-meta {
+  animation: fadeInUp 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation-delay: 240ms;
+  opacity: 0;
+  transform: translateY(20px) translateZ(0);
+  will-change: opacity, transform;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0) translateZ(0);
+  }
+  from {
+    opacity: 0;
+    transform: translateY(20px) translateZ(0);
+  }
+}
+
+@keyframes slideUp {
+  to {
+    opacity: 1;
+    transform: translateY(0) translateZ(0);
+  }
+}

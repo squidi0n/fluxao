@@ -1,0 +1,47 @@
+{
+  "admin": {
+    "*": "allow",
+    "posts": ["create", "read", "update", "delete", "archive", "publish"],
+    "users": ["create", "read", "update", "delete", "manage_permissions"],
+    "newsletter": ["read", "trigger", "manage"],
+    "comments": ["read", "moderate", "delete"],
+    "flags": ["read", "update"],
+    "audit": ["read"],
+    "settings": ["read", "update"],
+    "premium_content": ["read", "create", "manage"],
+    "subscription": ["read", "manage"]
+  },
+  "editor": {
+    "posts": ["create", "read", "update", "delete:own", "archive:own"],
+    "users": ["read", "update:self"],
+    "newsletter": [],
+    "comments": ["read", "moderate"],
+    "flags": [],
+    "audit": [],
+    "settings": ["read:self", "update:self"],
+    "premium_content": ["read", "create:own"],
+    "subscription": []
+  },
+  "premium": {
+    "posts": ["read", "premium_read"],
+    "users": ["read", "update:self"],
+    "newsletter": ["subscribe"],
+    "comments": ["create", "read", "like"],
+    "flags": [],
+    "audit": [],
+    "settings": ["read:self", "update:self"],
+    "premium_content": ["read"],
+    "subscription": ["read:self", "manage:self"]
+  },
+  "user": {
+    "posts": ["read", "trial_read"],
+    "users": ["read", "update:self"],
+    "newsletter": ["subscribe"],
+    "comments": ["create", "read"],
+    "flags": [],
+    "audit": [],
+    "settings": ["read:self", "update:self"],
+    "premium_content": ["trial_read"],
+    "subscription": ["read:self", "upgrade"]
+  }
+}
