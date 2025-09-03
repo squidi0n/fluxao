@@ -3,7 +3,8 @@ import pino from 'pino';
 import { prisma } from './prisma';
 import { idempotencyManager } from './reliability';
 
-import { newsletterQueue } from '@/server/queue';
+// TODO: Queue system for Vercel deployment
+// import { newsletterQueue } from '@/server/queue';
 
 const logger = pino({
   name: 'newsletter',
@@ -130,10 +131,11 @@ export async function enqueueNewsletter(
         }
       }
 
-      // Bulk add jobs to queue
+      // TODO: Queue system for Vercel deployment
+      // Bulk add jobs to queue  
       if (jobs.length > 0) {
-        await newsletterQueue.addBulk(jobs);
-        logger.info({ issueId: issue.id, jobCount }, 'Newsletter jobs enqueued');
+        // await newsletterQueue.addBulk(jobs);
+        logger.info({ issueId: issue.id, jobCount }, 'Newsletter jobs enqueued (queue disabled for Vercel)');
       }
 
       // Audit log
@@ -239,18 +241,18 @@ export async function retryFailedJob(jobId: string) {
     },
   });
 
-  // Re-enqueue job
-  await newsletterQueue.add(
-    `newsletter-retry-${job.id}`,
-    {
-      jobId: job.id,
-      issueId: job.issueId,
-      subscriberId: job.subscriberId,
-    },
-    {
-      jobId: `newsletter:${job.issueId}:${job.subscriberId}:retry:${Date.now()}`,
-    },
-  );
+  // TODO: Re-enqueue job (queue disabled for Vercel)
+  // await newsletterQueue.add(
+  //   `newsletter-retry-${job.id}`,
+  //   {
+  //     jobId: job.id,
+  //     issueId: job.issueId,
+  //     subscriberId: job.subscriberId,
+  //   },
+  //   {
+  //     jobId: `newsletter:${job.issueId}:${job.subscriberId}:retry:${Date.now()}`,
+  //   },
+  // );
 
   logger.info({ jobId }, 'Failed job retried');
 
